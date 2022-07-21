@@ -6,6 +6,7 @@ Version: 1.0v
 */
 
 function Employee(
+  id,
   account,
   name,
   email,
@@ -15,6 +16,7 @@ function Employee(
   position,
   hours
 ) {
+  this.id = id;
   this.account = account;
   this.name = name;
   this.email = email;

@@ -27,65 +27,99 @@ var createEmployee = function () {
       hours
     );
 
-    employeeList.push(newEmployee);
-    saveData();
-    getData();
-    document.getElementById("btnDong").click();
+    axios({
+      url: "https://6271e15e25fed8fcb5ec0b3d.mockapi.io/employee/employeeCRUD",
+      method: "POST",
+      data: newEmployee,
+    })
+      .then(function (objPromise) {
+        getData();
+        document.getElementById("btnDong").click();
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    // employeeList.push(newEmployee);
+    // saveData();
   }
 };
 
-var deleteEmployee = function (account) {
-  var indexEmployee = findEmpByAccount(account);
-  if (indexEmployee === -1) {
-    alert("Nhân viên không tồn tại");
-    return false;
-  }
+var deleteEmployee = async function (id) {
+  //   var indexEmployee = findEmpByAccount(account);
+  //   if (indexEmployee === -1) {
+  //     alert("Nhân viên không tồn tại");
+  //     return false;
+  //   }
   if (confirm("Bạn chắc chắn muốn xoá nhân viên?")) {
-    employeeList.splice(indexEmployee, 1);
-    saveData();
-    getData();
+    axios({
+      url:
+        "https://6271e15e25fed8fcb5ec0b3d.mockapi.io/employee/employeeCRUD/" +
+        id,
+      method: "DELETE",
+    })
+      .then(function (objPromise) {
+        getData();
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
 };
 
-var getUpdateEmployee = function (account) {
-  var indexEmployee = findEmpByAccount(account);
-  if (indexEmployee === -1) {
+var getUpdateEmployee = async function (id) {
+  //   var indexEmployee = findEmpByAccount(account);
+  //   if (indexEmployee === -1) {
+  //     alert("Nhân viên không tồn tại");
+  //     return false;
+  //   }
+  //   var foundEmployee = employeeList[indexEmployee];
+  var foundEmployee;
+  try {
+    var result = await axios({
+      url:
+        "https://6271e15e25fed8fcb5ec0b3d.mockapi.io/employee/employeeCRUD/" +
+        id,
+      method: "GET",
+    });
+    foundEmployee = result.data;
+    document.getElementById("tknv").disabled = true;
+    document.getElementById("tknv").value = foundEmployee.account;
+    document.getElementById("name").value = foundEmployee.name;
+    document.getElementById("email").value = foundEmployee.email;
+    document.getElementById("password").value = foundEmployee.password;
+    document.getElementById("datepicker").value = foundEmployee.startDay;
+    document.getElementById("luongCB").value = foundEmployee.salary;
+    document.getElementById("chucvu").value = foundEmployee.position;
+    document.getElementById("gioLam").value = foundEmployee.hours;
+    document.getElementById("btnCapNhat").className = "btn btn-success";
+    document.getElementById("modal-footer").innerHTML = `
+     <button id="btnThemNV" type="button" class="btn btn-success" onclick="createEmployee()">Thêm người
+    dùng</button>
+      <button id="btnCapNhat" type="button" class="btn btn-success" onclick="updateEmployee(${foundEmployee.account})">Cập nhật</button>
+    <button id="btnDong" type="button" class="btn btn-danger " data-dismiss="modal"
+        onclick="clearModal()">Đóng</button>`;
+    document.getElementById("btnThemNV").style.display = "none";
+  } catch (error) {
     alert("Nhân viên không tồn tại");
-    return false;
+    console.log(error);
+    setTimeout(function () {
+      document.getElementById("btnDong").click();
+    }, 0);
   }
-  var foundEmployee = employeeList[indexEmployee];
-  document.getElementById("tknv").disabled = true;
-
-  document.getElementById("tknv").value = foundEmployee.account;
-  document.getElementById("name").value = foundEmployee.name;
-  document.getElementById("email").value = foundEmployee.email;
-  document.getElementById("password").value = foundEmployee.password;
-  document.getElementById("datepicker").value = foundEmployee.startDay;
-  document.getElementById("luongCB").value = foundEmployee.salary;
-  document.getElementById("chucvu").value = foundEmployee.position;
-  document.getElementById("gioLam").value = foundEmployee.hours;
-
-  document.getElementById("btnCapNhat").className = "btn btn-success";
-  document.getElementById("modal-footer").innerHTML = `
-   <button id="btnThemNV" type="button" class="btn btn-success" onclick="createEmployee()">Thêm người
-  dùng</button>
-    <button id="btnCapNhat" type="button" class="btn btn-success" onclick="updateEmployee(${foundEmployee.account})">Cập nhật</button>
-  <button id="btnDong" type="button" class="btn btn-danger " data-dismiss="modal"
-      onclick="clearModal()">Đóng</button>`;
-  document.getElementById("btnThemNV").style.display = "none";
 };
 
-var updateEmployee = function (accountId) {
-  var indexEmployee = findEmpByAccount(accountId);
-  if (indexEmployee === -1) {
-    alert("Nhân viên không tồn tại");
-    return false;
-  }
+var updateEmployee = async function () {
+  //   var indexEmployee = findEmpByAccount(accountId);
+  //   if (indexEmployee === -1) {
+  //     alert("Nhân viên không tồn tại");
+  //     return false;
+  //   }
 
   if (!validateAll()) {
     return false;
   }
   var updatedEmployee = new Employee(
+    document.getElementById("spanEmpId").innerHTML,
     document.getElementById("tknv").value,
     document.getElementById("name").value,
     document.getElementById("email").value,
@@ -96,11 +130,26 @@ var updateEmployee = function (accountId) {
     +document.getElementById("gioLam").value
   );
 
-  employeeList.splice(indexEmployee, 1, updatedEmployee);
-  alert("Cập nhật thành công");
-  saveData();
-  getData();
-  document.getElementById("btnDong").click();
+  try {
+    var res = axios({
+      url:
+        "https://6271e15e25fed8fcb5ec0b3d.mockapi.io/employee/employeeCRUD/" +
+        document.getElementById("spanEmpId").innerHTML,
+      method: "PUT",
+      data: updatedEmployee,
+    });
+    alert("Cập nhật thành công");
+    document.getElementById("btnDong").click();
+    getData();
+
+  } catch (error) {
+    alert("Cập nhật đã bị lỗi! Vui lòng liên hệ quản trị viên");
+    console.log(error);
+  }
+
+  //   employeeList.splice(indexEmployee, 1, updatedEmployee);
+  //   saveData();
+  //   getData();
 };
 
 var searchEmployeeByRank = function () {
@@ -124,8 +173,11 @@ var findEmpByAccount = function (account) {
   return -1;
 };
 
+var findEmpById = function (id) {};
+
 var renderEmployee = function (renderList) {
   var dataHTML = "";
+
   for (var i = 0; i < renderList.length; i++) {
     dataHTML += `<tr>
       <td>${renderList[i].account}</td>
@@ -135,13 +187,16 @@ var renderEmployee = function (renderList) {
       <td>${formatPosition(renderList[i].position)}</td>
       <td>${formatSalary("" + renderList[i].totalSalary())}</td>
       <td>${renderList[i].rankEmployee()}</td>
-      <td><button id="btnUpdate" class="btn btn-success"data-toggle="modal" 
+      <td>
+      <span id="spanEmpId" class="d-none">${renderList[i].id}</span>
+      <button id="btnUpdate" class="btn btn-success"data-toggle="modal" 
       data-target="#myModal" onclick="getUpdateEmployee(${
-        renderList[i].account
+        renderList[i].id
       })">CẬP NHẬT</button>
       <button id="btnDelete" type="button" class="btn btn-danger" onclick="deleteEmployee(${
-        renderList[i].account
+        renderList[i].id
       })">XOÁ</button></td></td>
+
   </tr>`;
   }
   document.getElementById("tableDanhSach").innerHTML = dataHTML;
@@ -153,18 +208,29 @@ var saveData = function () {
 };
 
 var getData = function () {
-    var employeeListJSON = JSON.parse(localStorage.getItem("employeeList"));
-    if (employeeListJSON) {
-      employeeList = mapData(employeeListJSON);
-    }
-
-  renderEmployee(employeeList);
+  //   var employeeListJSON = JSON.parse(localStorage.getItem("employeeList"));
+  //   if (employeeListJSON) {
+  //     employeeList = mapData(employeeListJSON);
+  //   }
+  var promise = axios({
+    url: "https://6271e15e25fed8fcb5ec0b3d.mockapi.io/employee/employeeCRUD",
+    method: "GET",
+  });
+  promise
+    .then(function (promiseObject) {
+        employeeList = mapData(promiseObject.data);
+      renderEmployee(employeeList);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
 };
 
 var mapData = function (employeeListData) {
   var listData = [];
   for (var i = 0; i < employeeListData.length; i++) {
     var mappedEmployee = new Employee(
+      employeeListData[i].id,
       employeeListData[i].account,
       employeeListData[i].name,
       employeeListData[i].email,
